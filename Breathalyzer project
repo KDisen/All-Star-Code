@@ -1,0 +1,93 @@
+#include <LiquidCrystal.h>
+#include <Servo.h>
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+Servo myservo;
+int led1 = 7;
+int led2 = 6;
+int buzzerPin = 9;
+int button1Pin = A1;
+int button2Pin = A2;
+int mq3Pin = A0;
+int value;
+int buttonState1 = 0;
+int buttonState2 = 0;
+
+
+float bac= 0;
+
+
+int pos;
+char initial[]= {'B','L','O','W',' ','H','E','R','E'};
+char sober[]= {'S','O','B','E','R'};
+char drunk[]= {'D','R','U','N','K'};
+int i = 0;
+void setup(){
+  Serial.begin(9600);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(button1Pin, INPUT);
+  pinMode(button2Pin, INPUT);
+  pinMode(mq3Pin, INPUT);
+  
+  myservo.attach(10);
+  lcd.begin(16, 2);
+  for (int i =0; i < 9 ; i++){
+   tone(buzzerPin,100,500);
+   lcd.print(initial[i]);
+   
+   delay(500);
+   
+  }
+   delay(5000);
+   lcd.setCursor(0, 1);
+}
+  
+ void loop(){
+   if (bac <= 0){
+    myservo.detach();
+    lcd.clear();
+   }
+  buttonState1 = digitalRead(button1Pin);
+  buttonState2 = digitalRead(button2Pin);
+   if (buttonState1 == HIGH){
+    Serial.print("Pressed");
+    bac = 0.09;
+    lcd.setCursor(0,0);
+    lcd.clear();
+    for (int i = 0; i < 5; i++){ 
+      lcd.print(drunk[i]);
+      digitalWrite(led1, HIGH);
+      tone(buzzerPin, 100, 500);
+    }
+    myservo.detach();
+    delay(5000);
+      
+ }else if (buttonState2 == HIGH){
+    myservo.attach(10);
+    bac = 0.07;
+    }
+    if (bac < 0.08 && bac > 0){
+      for(pos = 0; pos <= 180; pos +=1) {
+      myservo.write(pos);
+      lcd.setCursor(0,0);
+      lcd.clear();
+    for (int i = 0; i < 5 ; i++) {
+        lcd.print(sober[i]);
+        digitalWrite(led2, HIGH);
+        tone(buzzerPin, 500, 100);
+        noTone(9);
+      }
+      delay(50);
+      }
+    }
+ }
+
+  
+    
+ 
+    
+
+
+
+
