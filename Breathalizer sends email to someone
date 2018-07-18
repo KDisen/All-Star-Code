@@ -1,0 +1,69 @@
+//Alcohol sensor and sends email to someone
+#include <Bridge.h>
+#include <Temboo.h>
+#include "TembooAccount.h" // contains Temboo account information, as described below
+
+int numRuns = 1;   // Execution count, so this doesn't run forever
+int maxRuns = 10;   // Maximum number of times the Choreo should be executed
+int mq3_analogPin = A0; // connected to the OUTPUT PIN of MQ3 
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+void setup(){
+  Serial.begin(9600); // open serial at 9600 bps
+    // For debugging, wait until the serial console is connected
+  delay(4000);
+  while(!Serial);
+  Bridge.begin();
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  // Print a message to the LCD.
+  lcd.print("Hello");
+}
+
+void loop()
+{
+  // give ample warmup time for readings to stabilize
+
+  int mq3_value = analogRead(mq3_analogPin);
+  Serial.println(mq3_value);
+   if (numRuns <= maxRuns) {
+    Serial.println("Running SendEmail - Run #" + String(numRuns++));
+    
+    TembooChoreo SendEmailChoreo;
+
+    // Invoke the Temboo client
+    SendEmailChoreo.begin();
+
+    // Set Temboo account credentials
+    SendEmailChoreo.setAccountName(kev11);
+    SendEmailChoreo.setAppKeyName(myFirstApp);
+    SendEmailChoreo.setAppKey(OM2nwHiGWnXS5sc2FkBoFK3s2ZEVP2JU);
+    
+    // Set profile to use for execution
+    SendEmailChoreo.setProfile("ArduinoEmail");
+    
+    // Identify the Choreo to run
+    SendEmailChoreo.setChoreo("/Library/Google/Gmail/SendEmail");
+    
+    // Run the Choreo; when results are available, print them to serial
+    SendEmailChoreo.run();
+    
+    while(SendEmailChoreo.available()) {
+      char c = SendEmailChoreo.read();
+      Serial.print(c);
+    }
+    SendEmailChoreo.close();
+  }
+
+  Serial.println("Sending...");
+  delay(30000); // wait 30 seconds between SendEmail calls
+  // set the cursor to column 0, line 1
+  // (note: line 1 is the second row, since counting begins with 0):
+  lcd.setCursor(0, 1);
+  // print the number of seconds since reset:
+  lcd.print(millis() / 1000);
+}
+
+  delay(100); //Just here to slow down the output.
+}
